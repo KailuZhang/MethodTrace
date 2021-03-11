@@ -1,0 +1,53 @@
+plugins {
+    id 'groovy'
+    id 'java-library'
+    id 'kotlin'
+}
+
+sourceSets {
+    main {
+        groovy {
+            srcDir '../methodtrace/src/main/groovy'
+        }
+
+        java {
+            srcDir "../methodtrace/src/main/java"
+        }
+
+        resources {
+            srcDir '../methodtrace/src/main/resources'
+        }
+    }
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation group: 'org.ow2.asm', name: 'asm', version: '9.0'
+    implementation group: 'org.ow2.asm', name: 'asm-commons', version: '9.0'
+    implementation 'com.android.tools.build:gradle:4.1.2'
+    implementation 'com.android.tools.lint:lint:27.1.2'
+    implementation 'com.android.tools.lint:lint-api:27.1.2'
+    implementation 'com.android.tools.lint:lint-checks:27.1.2'
+}
+
+compileGroovy {
+    dependsOn tasks.getByPath('compileKotlin')
+    classpath += files(compileKotlin.destinationDir)
+}
+
+pluginBundle {
+
+    website = 'https://github.com/kailuzhang/MethodTrace'
+    vcsUrl = 'https://github.com/kailuzhang/MethodTrace.git'
+    description = 'method time consuming trace(方法耗时插桩)'  //插件描述
+    tags = ['方法耗时', 'method', 'trace', 'asm','Android']  //插件的tag。可以通过这个在插件门户上搜索
+
+    plugins {
+        greetingsPlugin {
+            id = 'io.github.kailuzhang.methodtrace'   //插件的id，到时候apply的插件id
+            displayName = 'MethodTrace Plugin'
+        }
+    }
+}
