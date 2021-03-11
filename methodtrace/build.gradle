@@ -1,8 +1,8 @@
-plugins {
-    id 'groovy'
-    id 'java-library'
-    id 'kotlin'
-}
+apply plugin: 'groovy'
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'kotlin'
+apply plugin: "com.gradle.plugin-publish"
 
 sourceSets {
     main {
@@ -17,6 +17,21 @@ sourceSets {
         resources {
             srcDir '../methodtrace/src/main/resources'
         }
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.gradle.publish:plugin-publish-plugin:0.13.0"
     }
 }
 
@@ -36,6 +51,9 @@ compileGroovy {
     dependsOn tasks.getByPath('compileKotlin')
     classpath += files(compileKotlin.destinationDir)
 }
+
+version = "1.0.0"    //配置插件的版本号
+group = "io.github.kailuzhang.methodtrace"   //插件的群组，插件的classpath会用到
 
 pluginBundle {
 
