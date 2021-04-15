@@ -28,7 +28,7 @@ class MethodTraceTransform extends Transform {
 
     @Override
     String getName() {
-        return "traceMethodTransform"
+        return "methodTraceTransform"
     }
 
     @Override
@@ -48,24 +48,21 @@ class MethodTraceTransform extends Transform {
 
     @Override
     void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
-        def traceConfig = project.methodTrace
-        if (traceConfig.open && traceConfig.beatClass != null) {
-            def config = initConfig()
-            Collection<TransformInput> inputs = transformInvocation.inputs
-            TransformOutputProvider outputProvider = transformInvocation.outputProvider
-            if (outputProvider != null) {
-                outputProvider.deleteAll()
+        def config = initConfig()
+        Collection<TransformInput> inputs = transformInvocation.inputs
+        TransformOutputProvider outputProvider = transformInvocation.outputProvider
+        if (outputProvider != null) {
+            outputProvider.deleteAll()
+        }
+
+        // 遍历
+        inputs.each { TransformInput input ->
+            input.directoryInputs.each { DirectoryInput directoryInput ->
+                traceSrcFiles(directoryInput, outputProvider, config)
             }
 
-            // 遍历
-            inputs.each { TransformInput input ->
-                input.directoryInputs.each { DirectoryInput directoryInput ->
-                    traceSrcFiles(directoryInput, outputProvider, config)
-                }
-
-                input.jarInputs.each { JarInput jarInput ->
-                    traceJarFiles(jarInput, outputProvider, config)
-                }
+            input.jarInputs.each { JarInput jarInput ->
+                traceJarFiles(jarInput, outputProvider, config)
             }
         }
     }
@@ -74,6 +71,7 @@ class MethodTraceTransform extends Transform {
         def configuration = project.methodTrace
         Config config = new Config()
         config.beatClass = configuration.beatClass
+        config.configPackages = configuration.configPackages
         return config
     }
 

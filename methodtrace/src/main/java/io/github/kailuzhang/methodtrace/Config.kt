@@ -5,10 +5,9 @@ class Config {
     //一些默认无需插桩的类
     private val UNNEED_TRACE_CLASS = arrayOf("R.class", "R$", "Manifest", "BuildConfig")
 
-    //是否需要打印出所有被插桩的类和方法
-    var needLogTraceInfo = false
-
     var beatClass: String? = null
+
+    var configPackages: Set<String>? = null
 
     fun isNeedTraceClass(fileName: String): Boolean {
         var isNeed = true
@@ -26,5 +25,3 @@ class Config {
     }
 
 }
-
-

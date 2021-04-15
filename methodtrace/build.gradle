@@ -52,8 +52,8 @@ compileGroovy {
     classpath += files(compileKotlin.destinationDir)
 }
 
-version = "1.0.0"    //配置插件的版本号
-group = "io.github.kailuzhang.methodtrace"   //插件的群组，插件的classpath会用到
+version = "1.0.11"    //配置插件的版本号
+group = "io.github.kailuzhang"   //插件的群组，插件的classpath会用到
 
 pluginBundle {
 
@@ -69,3 +69,5 @@ pluginBundle {
         }
     }
 }
+
+apply from: rootProject.file('gradle/java-publish.gradle')

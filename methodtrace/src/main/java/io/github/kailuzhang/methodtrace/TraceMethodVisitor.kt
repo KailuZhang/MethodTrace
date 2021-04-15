@@ -1,6 +1,7 @@
 package io.github.kailuzhang.methodtrace
 
 import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Type
 import org.objectweb.asm.commons.AdviceAdapter
 
 class TraceMethodVisitor(
@@ -11,7 +12,6 @@ class TraceMethodVisitor(
 
     private var methodName: String? = null
     private var className: String? = null
-    private val maxSectionNameLength = 127
 
     init {
         val traceMethod = TraceMethod.create(0, access, className, name, desc)
@@ -19,41 +19,24 @@ class TraceMethodVisitor(
         this.className = className
     }
 
+    private var timeLocalIndex = 0
+
     override fun onMethodEnter() {
-        mv.visitLdcInsn(generatorMethodName())
-        mv.visitMethodInsn(
-            INVOKESTATIC,
-            config.beatClass,
-            "start",
-            "(Ljava/lang/String;)V",
-            false
-        )
+        mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "currentTimeMillis", "()J", false)
+        timeLocalIndex = newLocal(Type.LONG_TYPE) //这个是LocalVariablesSorter 提供的功能，可以尽量复用以前的局部变量
+        mv.visitVarInsn(LSTORE, timeLocalIndex)
     }
 
     override fun onMethodExit(opcode: Int) {
-        mv.visitLdcInsn(generatorMethodName())
+        mv.visitLdcInsn(methodName)
+        mv.visitVarInsn(LLOAD, timeLocalIndex)
+        mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "currentTimeMillis", "()J", false)
         mv.visitMethodInsn(
             INVOKESTATIC,
             config.beatClass,
-            "end",
-            "(Ljava/lang/String;)V",
+            "traceMethod",
+            "(Ljava/lang/String;JJ)V",
             false
         )
-    }
-
-    private fun generatorMethodName(): String? {
-        var sectionName = methodName
-        var length = sectionName?.length ?: 0
-        if (length > maxSectionNameLength && !sectionName.isNullOrBlank()) {
-            // 先去掉参数
-            val paramIndex = sectionName.indexOf('(')
-            sectionName = sectionName.substring(0, paramIndex)
-            // 如果依然更大，直接裁剪
-            length = sectionName.length
-            if (length > 127) {
-                sectionName = sectionName.substring(length - maxSectionNameLength)
-            }
-        }
-        return sectionName
     }
 }

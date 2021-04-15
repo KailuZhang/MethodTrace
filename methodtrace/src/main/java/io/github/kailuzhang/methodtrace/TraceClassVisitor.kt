@@ -10,6 +10,7 @@ class TraceClassVisitor(api: Int, cv: ClassVisitor?, private val traceConfig: Co
     private var className: String? = null
     private var isABSClass = false
     private var isBeatClass = false
+    private var isConfigTraceClass = false
 
     override fun visit(
         version: Int,
@@ -33,10 +34,17 @@ class TraceClassVisitor(api: Int, cv: ClassVisitor?, private val traceConfig: Co
             this.isBeatClass = true
         }
 
-
-        val isNotNeedTraceClass = isABSClass
-        if (traceConfig.needLogTraceInfo && !isNotNeedTraceClass) {
-            println("MethodTraceMan-trace-class: ${className ?: "未知"}")
+        run {
+            if (traceConfig.configPackages.isNullOrEmpty()) {
+                isConfigTraceClass = true
+            } else {
+                traceConfig.configPackages?.forEach {
+                    if (!name.isNullOrEmpty() && name.contains(it)) {
+                        isConfigTraceClass = true
+                        return@run
+                    }
+                }
+            }
         }
     }
 
@@ -48,7 +56,7 @@ class TraceClassVisitor(api: Int, cv: ClassVisitor?, private val traceConfig: Co
         exceptions: Array<out String>?
     ): MethodVisitor {
         val isConstructor = MethodFilter.isConstructor(name)
-        return if (isABSClass || isBeatClass || isConstructor) {
+        return if (isABSClass || isBeatClass || !isConfigTraceClass || isConstructor) {
             super.visitMethod(access, name, desc, signature, exceptions)
         } else {
             val mv = cv.visitMethod(access, name, desc, signature, exceptions)

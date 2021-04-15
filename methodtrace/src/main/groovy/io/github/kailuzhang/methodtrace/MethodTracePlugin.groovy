@@ -15,8 +15,9 @@ class MethodTracePlugin implements Plugin<Project> {
 
         project.extensions.create("methodTrace", MethodTraceConfig)
 
-        project.extensions.getByType(AppExtension).registerTransform(
-                new MethodTraceTransform(project)
-        )
+        String taskRequests = project.gradle.getStartParameter().getTaskRequests().toString()
+        if (taskRequests.contains("Debug") || taskRequests.contains("debug")) {
+            project.extensions.getByType(AppExtension).registerTransform(new MethodTraceTransform(project))
+        }
     }
 }
